@@ -31,6 +31,65 @@ export default new Vuex.Store({
       context.commit('addEmployeeShift', param);
     },
     resetEmployeeShiftData(context) {
+      //  populate initial data
+      context.commit('resetEmployeeShiftData', [
+        {
+          id: '1',
+          name: "Michael",
+          position: "chef",
+          shiftsThisWeek: [
+          ],
+        },
+        {
+          id: '2',
+          name: "Michelle",
+          position: "chef",
+          shiftsThisWeek: [
+          ],
+        },
+        {
+          id: '3',
+          name: "Justin",
+          position: "waiter",
+          shiftsThisWeek: [
+          ],
+        },
+        {
+          id: '4',
+          name: "Daniel",
+          position: "manager",
+          shiftsThisWeek: [
+          ],
+        },
+        {
+          id: '5',
+          name: "Gabby",
+          position: "chef",
+          shiftsThisWeek: [
+          ],
+        },
+        {
+          id: '6',
+          name: "Hiro",
+          position: "waiter",
+          shiftsThisWeek: [
+          ],
+        },
+        {
+          id: '7',
+          name: "Ana",
+          position: "waiter",
+          shiftsThisWeek: [
+          ],
+        },
+        {
+          id: '8',
+          name: "Ega",
+          position: "manager",
+          shiftsThisWeek: [
+          ],
+        },
+      ]);
     },
   }
 });
