@@ -1,9 +1,11 @@
 export default class Shift {
-  date: String;
-  workHour: String;
+  rosterId: String;
+  startTime: String;
+  endTime: String;
 
   constructor() {
-    this.date = ''
-    this.workHour = '';
+    this.rosterId = ''
+    this.startTime = '';
+    this.endTime = '';
   }
 }
