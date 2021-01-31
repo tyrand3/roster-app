@@ -1,5 +1,10 @@
 # roster-app
 
+## Assumption
+### there are two shifts per day.
+### The pizzeria open from 9.00 - 21.00, and a shift lasts 6 hours.
+
+
 ## Project setup
 ```
 npm install
