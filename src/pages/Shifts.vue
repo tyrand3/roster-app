@@ -128,7 +128,6 @@ import Vue from "vue";
 import moment from "moment";
 import ShiftAssign from "@/components/ShiftAssign.vue";
 import ShiftAdd from "@/components/ShiftAdd.vue";
-import Shift from "@/models/Shift.vue";
 export default Vue.extend({
   components: {
     ShiftAssign,
