@@ -1,108 +1,194 @@
 <template>
   <v-container>
     <v-row>
-      <v-spacer />
+      <v-col cols="1"></v-col>
+      <v-col>
+        <h2>This Week Employee's Shift</h2>
+      </v-col>
       <v-col cols="2">
-        <v-btn block append-icon="add" color="primary" @click="openShiftDialog"
+        <v-btn
+          block
+          append-icon="add"
+          color="primary"
+          @click="openShiftAddDialog"
           >add Shift</v-btn
         >
       </v-col>
     </v-row>
     <v-row class="font-weight-bold">
-      <v-col cols="1" />
-      <v-col cols="1" v-for="day in getCurrentWeekDays" :key="day">{{
-        day
-      }}</v-col>
-    </v-row>
-    <v-row v-for="position in positions" :key="position.value">
-      <v-col cols="12">
-        <h3 :class="`${position.color}--text`">{{ position.text }}</h3>
+      <v-col cols="1">
+        <v-row>
+          <v-col cols="12"> </v-col>
+          <v-col cols="12"> </v-col>
+          <v-col cols="12"
+            ><v-card class="elevation-0" height="125">
+              09.00-15.00</v-card
+            ></v-col
+          >
+          <v-col cols="12"
+            ><v-card class="elevation-0" height="125">
+              15.00-21.00</v-card
+            ></v-col
+          >
+        </v-row>
       </v-col>
-      <template v-for="employee in employees">
-        <v-col
-          v-if="employee.position === position.value"
-          :key="employee.name"
-          cols="12"
-        >
-          <v-row>
-            <v-col cols="1">{{ employee.name }}</v-col>
-            <v-col
-              cols="1"
-              v-for="(day, dayIndex) in getCurrentWeekDays"
-              :key="dayIndex"
+      <v-col cols="1" v-for="shift in shiftsPerWeek" :key="shift.date">
+        <v-row>
+          <v-col cols="12" class="text-center">{{ shift.date }}</v-col>
+          <v-col cols="12" style="height: 150px">
+            <v-card
+              v-if="shift.firstShift && shift.firstShift.rosterId"
+              height="125"
+              @click="
+                openShiftDialogWithDateRoster(
+                  shift.firstShift.rosterId,
+                  shift.date,
+                  'first'
+                )
+              "
             >
-              <template v-for="(shift, shiftIndex) in employee.shiftsThisWeek">
-                <v-card
-                  :key="shiftIndex"
-                  @click="updateEmployeeShiftDialog(employee.id, shift)"
-                  v-if="shift.date === day"
-                  :class="`${position.color} mb-1 pa-1 clickable`"
-                >
-                  <v-card-text v-if="shift.date === day">
-                    {{ shift.workHour }}
-                  </v-card-text>
-                </v-card>
-              </template>
-            </v-col>
-          </v-row>
-        </v-col>
-      </template>
+              <v-card-text class="clickable">
+                <v-row no-gutters>
+                  <v-col cols="12">
+                    {{ getRoster(shift.firstShift.rosterId).name }}</v-col
+                  >
+                  <v-col cols="12">{{
+                    `${
+                      getRoster(shift.firstShift.rosterId).employees.length
+                    } employees`
+                  }}</v-col>
+                  <v-col cols="12">{{
+                    `${shift.firstShift.startTime} - ${shift.firstShift.endTime}`
+                  }}</v-col>
+                </v-row></v-card-text
+              ></v-card
+            >
+            <v-card
+              height="125"
+              color="rgb(0, 0, 0, 0.1)"
+              v-else-if="shift.firstShift && !shift.firstShift.rosterId"
+              @click="openShiftDialogWithDate(shift.date, 'first')"
+              ><v-card-text class="white--text title text-center"
+                >+</v-card-text
+              ></v-card
+            ></v-col
+          >
+          <v-col cols="12" style="height: 150px">
+            <v-card
+              v-if="shift.secondShift && shift.secondShift.rosterId"
+              height="125"
+              @click="
+                openShiftDialogWithDateRoster(
+                  shift.secondShift.rosterId,
+                  shift.date,
+                  'second'
+                )
+              "
+            >
+              <v-card-text class="clickable">
+                <v-row no-gutters>
+                  <v-col cols="12">
+                    {{ getRoster(shift.secondShift.rosterId).name }}</v-col
+                  >
+                  <v-col cols="12">{{
+                    `${
+                      getRoster(shift.secondShift.rosterId).employees.length
+                    } employees`
+                  }}</v-col>
+                  <v-col cols="12">{{
+                    `${shift.secondShift.startTime} - ${shift.secondShift.endTime}`
+                  }}</v-col>
+                </v-row></v-card-text
+              ></v-card
+            >
+            <v-card
+              v-else-if="shift.secondShift && !shift.secondShift.rosterId"
+              height="125"
+              color="rgb(0, 0, 0, 0.1)"
+              @click="openShiftDialogWithDate(shift.date, 'second')"
+              ><v-card-text class="white--text title text-center"
+                >+</v-card-text
+              ></v-card
+            ></v-col
+          >
+        </v-row>
+      </v-col>
     </v-row>
-    <shift-add
+    <shift-assign
       v-if="shiftDialog"
       v-model="shiftDialog"
       :shiftUpdateData="shiftUpdateData"
-      :employees="employees"
-      :weekdays="getCurrentWeekDays"
     />
+    <shift-add v-if="shiftAddDialog" v-model="shiftAddDialog" />
   </v-container>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import moment from "moment";
-import shiftAdd from "@/components/ShiftAdd.vue";
+import ShiftAssign from "@/components/ShiftAssign.vue";
+import ShiftAdd from "@/components/ShiftAdd.vue";
 import Shift from "@/models/Shift.vue";
 export default Vue.extend({
   components: {
-    shiftAdd,
+    ShiftAssign,
+    ShiftAdd,
   },
   name: "Shifts",
-  created() {
-    this.resetEmployeeShiftData();
-  },
   computed: {
-    getCurrentWeekDays() {
-      const days = [];
-      for (let i = 0; i < 8; i++) {
-        days.push(moment().startOf("week").add(i, "days").format("MM/DD/YYYY"));
-      }
-      return days;
+    shiftsPerWeek() {
+      return this.$store.state.shiftsPerWeek;
     },
-    employees() {
-      return this.$store.state.employees;
+    rosters() {
+      return this.$store.state.rosters;
     },
+  },
+  created() {
+    this.setShiftThisWeek();
   },
   methods: {
-    openShiftDialog() {
-      this.shiftDialog = true;
-      this.shiftUpdateData = {};
+    setShiftThisWeek() {
+      this.$store.state.shiftsPerWeek = [];
+      for (let i = 1; i < 8; i++) {
+        this.$store.state.shiftsPerWeek.push({
+          date: moment().startOf("week").add(i, "days").format("MM/DD/YYYY"),
+        });
+      }
     },
-    updateEmployeeShiftDialog(employeeId: string, shift: Shift) {
-      this.shiftDialog = true;
-      this.shiftUpdateData = { ...shift, employeeId: employeeId };
+    getRoster(rosterId: string) {
+      const rosterIndex = this.rosters.findIndex((roster: any) => {
+        return roster.id === rosterId;
+      });
+      return this.rosters[rosterIndex];
     },
-    resetEmployeeShiftData() {
-      this.$store.dispatch("resetEmployeeShiftData");
+    openShiftAddDialog() {
+      this.shiftAddDialog = true;
+    },
+    openShiftDialogWithDate(date: string, period: string) {
+      this.shiftDialog = true;
+      this.shiftUpdateData = { date: date, shiftPeriod: period };
+    },
+    openShiftDialogWithDateRoster(
+      rosterId: string,
+      date: string,
+      period: string
+    ) {
+      this.shiftDialog = true;
+      this.shiftUpdateData = {
+        rosterId: rosterId,
+        date: date,
+        shiftPeriod: period,
+      };
     },
   },
   data: () => ({
+    shiftPerDay: 2,
     shiftDialog: false,
+    shiftAddDialog: false,
     shiftUpdateData: {},
-    message: "",
     positions: [
       { text: "Chef", value: "chef", color: "yellow" },
-      { text: "Waiter", value: "waiter", color: "blue" },
+      { text: "Waitress", value: "waitress", color: "blue" },
       { text: "Manager", value: "manager", color: "orange" },
     ],
   }),
